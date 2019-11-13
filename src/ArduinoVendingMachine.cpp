@@ -55,7 +55,7 @@ uint32_t lastTrapped;
 const uint8_t coinSolenoid[] = { 10, 0, A3 }; // Connected to the solenoids
 const uint8_t coinSlot[] = { A6, 0, A7 }; // Analog input used to check if the coin slots are empty
 const uint8_t coinReturn = A5; // Return button
-const uint8_t COIN_EMPTY = 500; // If the ADC value gets below this value, then the coin slot is empty
+const uint16_t COIN_EMPTY = 500; // If the ADC value gets below this value, then the coin slot is empty
 uint32_t refundTimer;
 
 void setup() {
