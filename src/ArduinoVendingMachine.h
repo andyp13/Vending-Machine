@@ -1,8 +1,9 @@
-#ifndef _ArduinoVendingMachine_h_
-#define _ArduinoVendingMachine_h_
+#ifndef ArduinoVendingMachine_H
+#define ArduinoVendingMachine_H
+
+#include "EEPROMAnything.h"
 
 #include <Arduino.h>
-#include "EEPROMAnything.h"
 
 enum Letter {
   OFF = 0x00,
