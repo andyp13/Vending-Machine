@@ -14,10 +14,6 @@ const uint8_t *nameArray[] = { LADDER, LADDER, LADDER, LADDER, LADDER, LADDER };
 const uint8_t coinSlotValue[] = { 5, 0, 10 }; // Coin slots from right to left - note that the middle one is not connected at the moment
 const uint8_t coinSlotLeftDefault[] = { 6, 0, 5 }; // Coins there is in the slot when it thinks it is empty - with safety margin of 1
 
-const uint16_t timeBetweenTweets = 60000;
-uint8_t tweetCoins = 0;
-uint32_t lastTweet, tweetCoinsTimer;
-
 // Do not change anything else below this line!
 uint8_t coinSlotLeft[] = { coinSlotLeftDefault[0], coinSlotLeftDefault[1], coinSlotLeftDefault[2] };
 
@@ -63,7 +59,7 @@ const uint8_t COIN_EMPTY = 500; // If the ADC value gets below this value, then 
 uint32_t refundTimer;
 
 void setup() {
-  Serial.begin(57600); // Initialize serial communications with master vending Arduino
+  Serial.begin(115200); // Initialize serial communications with master vending Arduino
   Serial.setTimeout(200);
 
   // Pins for LED matrix
@@ -115,7 +111,7 @@ void setup() {
     showValue(counter); // Update display to show counter value
 
   pinMode(coinPin, INPUT); // Setup coin input
-  counter = lastCounter = coinPulsesRecieved = lastCoinPulsesRecieved = lastTweet = 0;
+  counter = lastCounter = coinPulsesRecieved = lastCoinPulsesRecieved = 0;
   EEPROM_readAnything(0, totalUnitsDispensed); // Read value from EEPROM
   delay(300); // Make sure the voltage is stable
   updateDryNoOutput();
@@ -232,7 +228,6 @@ void loop() {
       tweetStatus();
     }*/
 
-    delayTweet();
   }
 
   checkStopMotor(); // Check if a motor has turned a half revolution
@@ -244,11 +239,6 @@ void loop() {
   purchaseChecker(); // Check if a button has been pressed
   randomChecker(); // Check if random button is pressed
   coinReturnCheck(); // Check if the coin return button is pressed
-
-  if (millis() - lastTweet > timeBetweenTweets) {
-    tweetStatus();
-    lastTweet = millis();
-  }
 
   if (millis() - lastTrapped > timeToNextTrapped) {
     scrollDisplay(TRAPPED); // Display "Help... I'm stuck in a vendingmachine"
@@ -273,11 +263,6 @@ void loop() {
     for (uint8_t motor = 0; motor < sizeof(motorToOutputMask); motor++)
       spinMotor(motor);
   }
-}
-
-void delayTweet() {
-  if (millis() - lastTweet > timeBetweenTweets - 5000) // Assume that we sent a response
-    lastTweet += 10000; // Postpone tweet
 }
 
 bool checkCoinSlots() {
@@ -308,23 +293,15 @@ void coinChecker() {
       sei(); // Enable interrupts again
       uint8_t creditsAdded = coins * 5;
       counter += creditsAdded;
-      tweetCoins += creditsAdded;
       lastCoinPulseTime = 0;
-      tweetCoinsTimer = millis();
     }
     lastCoinPulsesRecieved = coinPulsesRecieved;
-    delayTweet();
   }
   else if (coinPulsesRecieved == 1) { // If pulses is 1, and has not changed for 150ms, reset pulse count
     if (lastCoinPulseTime == 0) // If timer is not set, the pulse was just received
       lastCoinPulseTime = millis();
     else if (millis() - lastCoinPulseTime > 150) // Faux pulse - reset everything
       lastCoinPulseTime = coinPulsesRecieved = lastCoinPulsesRecieved = 0;
-  }
-  if (tweetCoins && millis() - tweetCoinsTimer > 500) {
-    Serial.write('c');
-    Serial.write(tweetCoins);
-    tweetCoins = 0;
   }
 }
 
