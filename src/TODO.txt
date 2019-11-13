@@ -1,0 +1,2 @@
+Skal ikke printe "No credit flere gange"
+Re-alloker kort ved Bad EEPROM på RFID
